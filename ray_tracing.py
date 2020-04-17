@@ -184,7 +184,7 @@ class Scene:
         if t_min is None:
             return self.bg_color
 
-        col = self._calculate_illumination(ray, surface_min, t_min, depth)
+        col = self._calculate_illumination(ray, surface_min, t_min, depth) / depth
         return col
 
     def _calculate_illumination(self, ray, surface, t, depth):
