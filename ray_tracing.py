@@ -225,9 +225,9 @@ class Scene:
 
         # Reflection
         if depth < REFLECTION_DEPTH:
-            dir = normalize(ray.direction - normal * 2 * np.dot(ray.direction, normal))
+            direction = normalize(ray.direction - normal * 2 * np.dot(ray.direction, normal))
             start = intersection_point + THRESHOLD * normal
-            reflection_ray = Ray(start, dir)
+            reflection_ray = Ray(start, direction)
             color += (surface.reflection_coefficient * self.calculate_reflection_color(reflection_ray, depth + 1))
         return color
 
