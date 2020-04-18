@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from enum import Enum
 
 THRESHOLD = 0.0001
-REFLECTION_DEPTH = 3
+REFLECTION_DEPTH = 1
 
 
 def normalize(vector):
@@ -169,69 +169,65 @@ class Scene:
     def trace(self):
         for i in range(1000):
             for j in range(1000):
-                t_min = float('inf')
-                surface_min = None
                 p_x = (i / 10) - 50 + 0.05
                 p_y = ((999 - j) / 10) - 50 + 0.05
                 p_z = 100
-                ray = self._generate_ray(p_x, p_y, p_z)
-                for surface in self.surfaces:
-                    t = surface.intersect(ray, ray_mode=RayMode.CAMERA)
-                    if t is not None:
-                        if surface_min is None or t < t_min:
-                            t_min = t
-                            surface_min = surface
-
+                ray = self.__generate_ray(p_x, p_y, p_z)
+                surface_min, t_min = self.__get_closest_surface(ray, ray_mode=RayMode.CAMERA)
                 if surface_min is not None:
-                    illumination = self._calculate_illumination(ray, surface_min, t_min, 0)
+                    illumination = self.__calculate_illumination(ray, surface_min, t_min, 0)
                     self.image[j][i] = illumination
                     for k in range(3):
                         self.image[j][i][k] = min(self.image[j][i][k], 255)
                 else:
                     self.image[j][i] = self.bg_color
 
-    def calculate_reflection_color(self, ray, depth):
+    def __get_closest_surface(self, ray, on_surface=None, ray_mode=RayMode.NONE, break_when_found=False):
         surface_min = None
         t_min = None
         for s in self.surfaces:
-            t = s.intersect(ray)
-            if t is not None and (surface_min is None or t < t_min):
-                surface_min = s
-                t_min = t
-        if t_min is None:
-            return self.bg_color
+            if not on_surface or s != on_surface:
+                t = s.intersect(ray, ray_mode)
+                if t is not None and (surface_min is None or t < t_min):
+                    surface_min = s
+                    t_min = t
+                    if break_when_found:
+                        break
+        return surface_min, t_min
 
-        col = self._calculate_illumination(ray, surface_min, t_min, depth) / depth
-        return col
-
-    def _calculate_illumination(self, ray, surface, t, depth):
+    def __calculate_illumination(self, ray, surface, t, depth):
         intersection_point = ray.direction * t + ray.start
         normal = surface.get_surface_normal(intersection_point)
         light_ray = Ray(intersection_point, self.light_position - intersection_point)
 
-        see_light = True
         # Shadow
-        for s in self.surfaces:
-            t = s.intersect(light_ray, RayMode.LIGHT)
-            if t is not None and s != surface:
-                see_light = False
-                break
+        _, t = self.__get_closest_surface(light_ray, surface, RayMode.LIGHT, break_when_found=True)
+        see_light = False if t is not None else True
+
         # Ambient
         ambient = self.ambient * self.ambient_coefficient
-        # diffuse color
+
+        # Diffuse color
         dot = np.dot(normalize(light_ray.direction), normal)
         diffuse = surface.color * surface.diffuse_coefficient * max(0, dot)
         color = ambient + diffuse * see_light
 
         # Reflection
         if depth < REFLECTION_DEPTH:
+            depth += 1
             direction = normalize(ray.direction - normal * 2 * np.dot(ray.direction, normal))
             start = intersection_point + THRESHOLD * normal
             reflection_ray = Ray(start, direction)
-            color += (surface.reflection_coefficient * self.calculate_reflection_color(reflection_ray, depth + 1))
+            surface_min, t_min = self.__get_closest_surface(reflection_ray, surface)
+            if t_min is None:
+                col = self.bg_color
+            else:
+                col = self.__calculate_illumination(reflection_ray, surface_min, t_min, depth) / depth
+            color += surface.reflection_coefficient * col
+
         return color
 
-    def _generate_ray(self, x, y, z):
+    def __generate_ray(self, x, y, z):
         # divisor = ((x - self.eye[0])**2 + (y - self.eye[1])**2 + (z - self.eye[2])**2)**0.5
         # Direction does not have to be a unit vector
         direction = np.array([x, y, z]) - self.eye
@@ -246,7 +242,7 @@ class Scene:
             plt.show()
 
         im = Image.fromarray(self.image.astype('uint8'))
-        im.save('scene.jpg')
+        im.save('scene_example_.jpg')
 
 
 def main():
