@@ -3,6 +3,7 @@ from PIL import Image
 from abc import ABC, abstractmethod
 import numpy as np
 import matplotlib.pyplot as plt
+from enum import Enum
 
 THRESHOLD = 0.0001
 REFLECTION_DEPTH = 3
@@ -10,6 +11,12 @@ REFLECTION_DEPTH = 3
 
 def normalize(vector):
     return vector / np.linalg.norm(vector)
+
+
+class RayMode(Enum):
+    CAMERA = 1
+    LIGHT = 2
+    NONE = 3
 
 
 class Ray:
@@ -39,14 +46,17 @@ class Plane(Surface):
     def get_surface_normal(self, point=None):
         return self.normal
 
-    def intersect(self, ray, light=False):
+    def intersect(self, ray, ray_mode=RayMode.NONE):
         n_dot_l = np.dot(ray.direction, self.normal)
         if abs(n_dot_l) < 0.001:
             return None
         t = np.dot((self.point - ray.start), self.normal) / n_dot_l
-        if light:
+        if ray_mode == RayMode.LIGHT:
             return t if THRESHOLD < t < 1 else None
-        return t if t >= THRESHOLD else None
+        elif ray_mode == RayMode.CAMERA:
+            return t if t >= 1 else None
+        else:
+            return t if t >= THRESHOLD else None
 
 
 class Sphere(Surface):
@@ -60,7 +70,7 @@ class Sphere(Surface):
     def get_surface_normal(self, point=None):
         return (point - self.center) / self.radius
 
-    def intersect(self, ray, light=False):
+    def intersect(self, ray, ray_mode=RayMode.NONE):
         # Move sphere to the origin and do the calculations
         ray_shifted = Ray(ray.start - self.center, ray.direction)
         a = np.dot(ray_shifted.direction, ray_shifted.direction)
@@ -76,7 +86,7 @@ class Sphere(Surface):
             t_0 = (- b - discriminant ** 0.5) / (2 * a)
             t_1 = (- b + discriminant ** 0.5) / (2 * a)
 
-            if light:
+            if ray_mode == RayMode.LIGHT:
                 # Ray needs to intersect with the object on a point between the light
                 # source and the ray's starting point. So we check if the t value is
                 # between 0 and 1.
@@ -86,12 +96,19 @@ class Sphere(Surface):
                     return t_1
                 else:
                     return None
-            else:
+            elif ray_mode == RayMode.CAMERA:
                 # t value needs to be greater than 1 because we don't want to show
                 # the objects between the screen and the eye.
                 if t_0 > 1:
                     return t_0
                 elif t_1 > 1:
+                    return t_1
+                else:
+                    return None
+            else:
+                if t_0 > THRESHOLD:
+                    return t_0
+                elif t_1 > THRESHOLD:
                     return t_1
                 else:
                     return None
@@ -159,7 +176,7 @@ class Scene:
                 p_z = 100
                 ray = self._generate_ray(p_x, p_y, p_z)
                 for surface in self.surfaces:
-                    t = surface.intersect(ray)
+                    t = surface.intersect(ray, ray_mode=RayMode.CAMERA)
                     if t is not None:
                         if surface_min is None or t < t_min:
                             t_min = t
@@ -195,7 +212,7 @@ class Scene:
         see_light = True
         # Shadow
         for s in self.surfaces:
-            t = s.intersect(light_ray, True)
+            t = s.intersect(light_ray, RayMode.LIGHT)
             if t is not None and s != surface:
                 see_light = False
                 break
@@ -235,7 +252,7 @@ class Scene:
 def main():
     scene = Scene()
     scene.get_input(argv[1])
-    scene.render(show=True)
+    scene.render(show=False)
 
 
 if __name__ == "__main__":
