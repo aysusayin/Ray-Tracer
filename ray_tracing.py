@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from enum import Enum
 
 THRESHOLD = 0.0001
-REFLECTION_DEPTH = 1
+MAX_REFLECTION_DEPTH = 3
 
 
 def normalize(vector):
@@ -130,21 +130,24 @@ class Scene:
         """
         :param filename: file with input
         Input format
-        Ambient
+        Ambient color
         n: Number of spheres
         next n rows: color of sphere i
                      position of sphere i
                      radius of sphere i
                      diffuse coefficient of sphere i
+                     reflection coefficient of sphere i
         n: Number of planes
         next n rows: color of plane i
                      point on plane i
                      normal of plane i
                      diffuse coefficient of plane i
+                     reflection coefficient of plane i
         :return: None
         """
         f = open(filename, 'r')
         self.ambient = np.array(list(map(int, f.readline().split())))
+        self.ambient_coefficient = float(f.readline())
         sphere_num = int(f.readline())
 
         for _ in range(sphere_num):
@@ -201,11 +204,11 @@ class Scene:
         light_ray = Ray(intersection_point, self.light_position - intersection_point)
 
         # Shadow
-        _, t = self.__get_closest_surface(light_ray, surface, RayMode.LIGHT, break_when_found=True)
+        _, t = self.__get_closest_surface(light_ray, surface, ray_mode=RayMode.LIGHT, break_when_found=True)
         see_light = False if t is not None else True
 
         # Ambient
-        ambient = self.ambient * self.ambient_coefficient
+        ambient = self.ambient * self.ambient_coefficient * surface.color / 256
 
         # Diffuse color
         dot = np.dot(normalize(light_ray.direction), normal)
@@ -213,7 +216,7 @@ class Scene:
         color = ambient + diffuse * see_light
 
         # Reflection
-        if depth < REFLECTION_DEPTH:
+        if depth < MAX_REFLECTION_DEPTH:
             depth += 1
             direction = normalize(ray.direction - normal * 2 * np.dot(ray.direction, normal))
             start = intersection_point + THRESHOLD * normal
