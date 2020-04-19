@@ -11,7 +11,7 @@ The eye point is at the origin and the screen extends from (-50, -50, 100)
  You can change the light and eye position in the Scene class by replacing 
  with your own values.
  
- Examples can be seen in the examples folder.
+
  ## How to run?
  Run your program like:
  ``` >>> python3 ray_racing.py input.txt ```
@@ -40,7 +40,16 @@ Next N x 5 rows:
 The output is a jpg file named “scene.jpg” saved in the same directory with the program. If user would like to display the image using Matplotlib, set “show=True” when calling render method.
 
 ## Examples
+More examples can be seen in the examples folder.
+
 ### Example 1
+<img src="https://github.com/aysusayin/Computer-Graphics/blob/master/Examples/scene_example_1.jpg?raw=true" alt="Example 1" width="700">
+
+### Example 2
+<img src="https://github.com/aysusayin/Computer-Graphics/blob/master/Examples/scene_example_3.jpg?raw=true" alt="Example 3" width="700">
+
+### Example 3
+<img src="https://github.com/aysusayin/Computer-Graphics/blob/master/Examples/scene_example_5.jpg?raw=true" alt="Example 5" width="700">
 
 
 ## Method Explanation
