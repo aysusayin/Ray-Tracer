@@ -43,13 +43,13 @@ The output is a jpg file named “scene.jpg” saved in the same directory with 
 More examples can be seen in the examples folder.
 
 ### Example 1
-<img src="https://github.com/aysusayin/Computer-Graphics/blob/master/Examples/scene_example_1.jpg?raw=true" alt="Example 1" width="700">
+<img src="https://github.com/aysusayin/Ray-Tracer/blob/master/Examples/scene_example_1.jpg?raw=true" alt="Example 1" width="700">
 
 ### Example 2
-<img src="https://github.com/aysusayin/Computer-Graphics/blob/master/Examples/scene_example_3.jpg?raw=true" alt="Example 3" width="700">
+<img src="https://github.com/aysusayin/Ray-Tracer/blob/master/Examples/scene_example_3.jpg?raw=true" alt="Example 3" width="700">
 
 ### Example 3
-<img src="https://github.com/aysusayin/Computer-Graphics/blob/master/Examples/scene_example_5.jpg?raw=true" alt="Example 5" width="700">
+<img src="https://github.com/aysusayin/Ray-Tracer/blob/master/Examples/scene_example_5.jpg?raw=true" alt="Example 5" width="700">
 
 
 ## Method Explanation

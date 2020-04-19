@@ -245,7 +245,7 @@ class Scene:
             plt.show()
 
         im = Image.fromarray(self.image.astype('uint8'))
-        im.save('scene_example_.jpg')
+        im.save('scene.jpg')
 
 
 def main():
