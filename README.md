@@ -1,4 +1,4 @@
-# Computer-Graphics
+# Ray Tracer
 In this work, ray tracing is implemented to render the scenes with sphere 
 and plane objects.  The space consists of the spheres and planes that user 
 gave as input. Each object has their own color and diffuse and reflection 
